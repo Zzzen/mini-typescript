@@ -9,6 +9,11 @@ export enum Token {
     Newline,
     Semicolon,
     Colon,
+    LessThanToken,
+    GreaterThanToken,
+    CommaToken,
+    OpenParenToken,
+    CloseParenToken,
     Whitespace,
     Unknown,
     BOF,
@@ -27,10 +32,15 @@ export enum Node {
     ExpressionStatement,
     Var,
     TypeAlias,
+    FunctionDeclaration,
 }
 export type Error = {
     pos: number
     message: string
+}
+export interface ParameterDeclaration {
+    readonly name: Identifier;                  // Declared parameter name.
+    readonly type?: Identifier;
 }
 export interface Location {
     pos: number
@@ -49,7 +59,14 @@ export type Assignment = Location & {
     name: Identifier
     value: Expression
 }
-export type Statement = ExpressionStatement | Var | TypeAlias
+export type FunctionDeclaration = Location & {
+    kind: Node.FunctionDeclaration
+    name: Identifier
+    typeParameters?: ReadonlyArray<Identifier>
+    parameters: ReadonlyArray<ParameterDeclaration>
+    type?: Identifier
+}
+export type Statement = ExpressionStatement | Var | TypeAlias | FunctionDeclaration
 export type ExpressionStatement = Location & {
     kind: Node.ExpressionStatement
     expr: Expression

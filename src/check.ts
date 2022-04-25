@@ -10,7 +10,7 @@ function typeToString(type: Type) {
 export function check(module: Module) {
     return module.statements.map(checkStatement)
 
-    function checkStatement(statement: Statement): Type {
+    function checkStatement(statement: Statement): Type | undefined {
         switch (statement.kind) {
             case Node.ExpressionStatement:
                 return checkExpression(statement.expr)
@@ -32,7 +32,7 @@ export function check(module: Module) {
             case Node.Identifier:
                 const symbol = resolve(module.locals, expression.text, Node.Var)
                 if (symbol) {
-                    return checkStatement(symbol.valueDeclaration!)
+                    return checkStatement(symbol.valueDeclaration!)!
                 }
                 error(expression.pos, "Could not resolve " + expression.text)
                 return errorType

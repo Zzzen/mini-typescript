@@ -1,11 +1,11 @@
-import { Lexer, Token, Node, Statement, Identifier, Expression, Module } from './types'
+import { Lexer, Token, Node, Statement, Identifier, Expression, Module, ParameterDeclaration, FunctionDeclaration } from './types'
 import { error } from './error'
 export function parse(lexer: Lexer): Module {
     lexer.scan()
     return parseModule()
 
     function parseModule(): Module {
-        const statements = parseSeparated(parseStatement, () => tryParseToken(Token.Semicolon))
+        const statements = parseSeparated(parseStatement, () => tryParseToken(Token.Semicolon) || tryParseToken(Token.Unknown))
         parseExpected(Token.EOF)
         return { statements, locals: new Map() }
     }
@@ -37,6 +37,17 @@ export function parse(lexer: Lexer): Module {
         error(e.pos, "Expected identifier but got a literal")
         return { kind: Node.Identifier, text: "(missing)", pos: e.pos }
     }
+    function parseParameterDeclaration(): ParameterDeclaration {
+        const name = parseIdentifier();
+        let type: Identifier | undefined
+        if (tryParseToken(Token.Colon)) {
+            type = parseIdentifier()
+        }
+        return {
+            name,
+            type,
+        }
+    }
     function parseStatement(): Statement {
         const pos = lexer.pos()
         if (tryParseToken(Token.Var)) {
@@ -51,6 +62,36 @@ export function parse(lexer: Lexer): Module {
             parseExpected(Token.Equals)
             const typename = parseIdentifier()
             return { kind: Node.TypeAlias, name, typename, pos }
+        }
+        else if (tryParseToken(Token.Function)) {
+            const name = parseIdentifier()
+            let typeParameters: Identifier[] = [];
+            let parameters: ParameterDeclaration[] = [];
+            if (tryParseToken(Token.LessThanToken)) {
+                typeParameters = parseSeparated(parseIdentifier, () => tryParseToken(Token.CommaToken))
+                parseExpected(Token.GreaterThanToken)
+            }
+
+            parseExpected(Token.OpenParenToken)
+
+            if (!tryParseToken(Token.CloseParenToken)) {
+                parameters = parseSeparated(parseParameterDeclaration, () => tryParseToken(Token.CommaToken))
+                parseExpected(Token.CloseParenToken)
+            }
+
+            parseExpected(Token.Colon)
+
+            const type = parseIdentifier()
+
+            return {
+                kind: Node.FunctionDeclaration,
+                name,
+                pos,
+                typeParameters,
+                type,
+                parameters,
+            } as FunctionDeclaration;
+
         }
         return { kind: Node.ExpressionStatement, expr: parseExpression(), pos }
     }

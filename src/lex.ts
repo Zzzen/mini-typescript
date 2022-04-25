@@ -37,6 +37,11 @@ export function lex(s: string): Lexer {
                 case '=': token = Token.Equals; break
                 case ';': token = Token.Semicolon; break
                 case ":": token = Token.Colon; break
+                case "<": token = Token.LessThanToken; break
+                case ">": token = Token.GreaterThanToken; break
+                case "(": token = Token.OpenParenToken; break
+                case ")": token = Token.CloseParenToken; break
+                case ",": token = Token.CommaToken; break
                 default: token = Token.Unknown; break
             }
         }

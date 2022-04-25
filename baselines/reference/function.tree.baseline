@@ -1,0 +1,57 @@
+{
+  "locals": {},
+  "statements": [
+    {
+      "kind": "FunctionDeclaration",
+      "name": {
+        "kind": "Identifier",
+        "text": "a"
+      },
+      "typeParameters": {},
+      "type": {
+        "kind": "Identifier",
+        "text": "number"
+      },
+      "parameters": {}
+    },
+    {
+      "kind": "FunctionDeclaration",
+      "name": {
+        "kind": "Identifier",
+        "text": "b"
+      },
+      "typeParameters": {
+        "0": {
+          "kind": "Identifier",
+          "text": "T"
+        }
+      },
+      "type": {
+        "kind": "Identifier",
+        "text": "T"
+      },
+      "parameters": {
+        "0": {
+          "name": {
+            "kind": "Identifier",
+            "text": "a"
+          },
+          "type": {
+            "kind": "Identifier",
+            "text": "T"
+          }
+        },
+        "1": {
+          "name": {
+            "kind": "Identifier",
+            "text": "b"
+          },
+          "type": {
+            "kind": "Identifier",
+            "text": "T"
+          }
+        }
+      }
+    }
+  ]
+}

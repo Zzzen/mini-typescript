@@ -11,6 +11,11 @@ function emitStatement(statement: Statement): string {
             return `var ${statement.name.text}${typestring} = ${emitExpression(statement.init)}`
         case Node.TypeAlias:
             return `type ${statement.name.text} = ${statement.typename.text}`
+        case Node.FunctionDeclaration:
+            const typeParameters = statement.typeParameters?.length ? '<' + statement.typeParameters.map(x => x.text).join(', ') + '>' : ''
+            const parameters = statement.parameters.map(x => x.name.text + (x.type ? ': ' + x.type.text : '')).join(', ')
+            const type = statement.type ? ': ' + statement.type.text : ''
+            return `function ${statement.name.text} ${typeParameters}(${parameters})${type}`
     }
 }
 function emitExpression(expression: Expression): string {

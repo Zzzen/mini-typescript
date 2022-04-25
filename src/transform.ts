@@ -1,4 +1,4 @@
-import { Statement, Node } from './types'
+import { Statement, Node, FunctionDeclaration } from './types'
 export function transform(statements: Statement[]) {
     return typescript(statements)
 }
@@ -14,6 +14,13 @@ function typescript(statements: Statement[]) {
                 return [{ ...statement, typename: undefined }]
             case Node.TypeAlias:
                 return []
+            case Node.FunctionDeclaration:
+                return [{
+                    ...statement,
+                    type: undefined,
+                    typeParameters: undefined,
+                    parameters: statement.parameters.map(x => ({ name: x.name }))
+                } as FunctionDeclaration]
         }
     }
 }

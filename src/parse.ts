@@ -1,4 +1,4 @@
-import { Lexer, Token, Node, Statement, Identifier, Expression, Module, ParameterDeclaration, FunctionDeclaration } from './types'
+import { Lexer, Token, Node, Statement, Identifier, Expression, Module, ParameterDeclaration, FunctionDeclaration, CallExpression } from './types'
 import { error } from './error'
 export function parse(lexer: Lexer): Module {
     lexer.scan()
@@ -14,6 +14,25 @@ export function parse(lexer: Lexer): Module {
         const e = parseIdentifierOrLiteral()
         if (e.kind === Node.Identifier && tryParseToken(Token.Equals)) {
             return { kind: Node.Assignment, name: e, value: parseExpression(), pos }
+        }
+        else if (e.kind === Node.Identifier) {
+            const callWithTypeArguments = tryParseToken(Token.LessThanToken)
+            const callwithoutTypeArguments = tryParseToken(Token.OpenParenToken)
+            if (!callWithTypeArguments && !callwithoutTypeArguments) {
+                return e;
+            }
+
+            let typeArguments: Identifier[] | undefined;
+
+            if (callWithTypeArguments) {
+                typeArguments = parseSeparated(parseIdentifier, () => tryParseToken(Token.CommaToken))
+                parseExpected(Token.GreaterThanToken)
+                parseExpected(Token.OpenParenToken)
+            }
+
+            const args = parseSeparated(parseIdentifier, () => tryParseToken(Token.CommaToken))
+            parseExpected(Token.CloseParenToken)
+            return { kind: Node.CallExpression, pos, expression: e, typeArguments, arguments: args  }
         }
         return e
     }
@@ -92,6 +111,10 @@ export function parse(lexer: Lexer): Module {
                 parameters,
             } as FunctionDeclaration;
 
+        }
+
+        if (tryParseToken(Token.Unknown)) {
+            return { kind: Node.EmptyStatement, pos }
         }
         return { kind: Node.ExpressionStatement, expr: parseExpression(), pos }
     }

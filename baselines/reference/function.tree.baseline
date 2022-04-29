@@ -1,5 +1,18 @@
 {
-  "locals": {},
+  "locals": {
+    "a": [
+      {
+        "kind": "FunctionDeclaration",
+        "pos": 8
+      }
+    ],
+    "b": [
+      {
+        "kind": "FunctionDeclaration",
+        "pos": 30
+      }
+    ]
+  },
   "statements": [
     {
       "kind": "FunctionDeclaration",
@@ -49,6 +62,42 @@
           "type": {
             "kind": "Identifier",
             "text": "T"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ExpressionStatement",
+      "expr": {
+        "kind": "CallExpression",
+        "expression": {
+          "kind": "Identifier",
+          "text": "a"
+        },
+        "arguments": {
+          "0": {
+            "kind": "Identifier",
+            "text": "(missing)"
+          }
+        }
+      }
+    },
+    {
+      "kind": "ExpressionStatement",
+      "expr": {
+        "kind": "CallExpression",
+        "expression": {
+          "kind": "Identifier",
+          "text": "b"
+        },
+        "arguments": {
+          "0": {
+            "kind": "Identifier",
+            "text": "(missing)"
+          },
+          "1": {
+            "kind": "Identifier",
+            "text": "(missing)"
           }
         }
       }

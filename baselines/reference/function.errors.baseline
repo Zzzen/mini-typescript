@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "pos": 55,
+    "message": "Expected identifier or literal but got CloseParenToken"
+  },
+  {
+    "pos": 56,
+    "message": "parseToken: Expected CloseParenToken but got Unknown"
+  },
+  {
+    "pos": 60,
+    "message": "Expected identifier but got a literal"
+  },
+  {
+    "pos": 63,
+    "message": "Expected identifier but got a literal"
+  }
+]

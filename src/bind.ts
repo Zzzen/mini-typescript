@@ -1,4 +1,4 @@
-import { Module, Node, Statement, Table } from './types'
+import { FunctionDeclaration, Module, Node, Statement, Table } from './types'
 import { error } from './error'
 export function bind(m: Module) {
     for (const statement of m.statements) {
@@ -6,7 +6,7 @@ export function bind(m: Module) {
     }
 
     function bindStatement(locals: Table, statement: Statement) {
-        if (statement.kind === Node.Var || statement.kind === Node.TypeAlias) {
+        if (statement.kind === Node.Var || statement.kind === Node.TypeAlias || statement.kind === Node.FunctionDeclaration) {
             const symbol = locals.get(statement.name.text)
             if (symbol) {
                 const other = symbol.declarations.find(d => d.kind === statement.kind)
@@ -27,9 +27,32 @@ export function bind(m: Module) {
                 })
             }
         }
+
+        if (statement.kind === Node.FunctionDeclaration) {
+            bindFunctionDeclaration(statement)
+        }
     }
 }
-export function resolve(locals: Table, name: string, meaning: Node.Var | Node.TypeAlias) {
+
+function bindFunctionDeclaration(declaration: FunctionDeclaration) {
+    const locals: Table = new Map()
+    for(const parameter of declaration.parameters) {
+        locals.set(parameter.name.text, {
+            declarations: [parameter],
+            valueDeclaration: parameter
+        })
+    }
+    for (const typeParameters of declaration.typeParameters || []) {
+        locals.set(typeParameters.text, {
+            declarations: [typeParameters],
+            valueDeclaration: typeParameters
+        })
+    }
+
+    declaration.locals = locals;
+}
+
+export function resolve(locals: Table, name: string, meaning: Node.Var | Node.TypeAlias | Node.FunctionDeclaration) {
     const symbol = locals.get(name)
     if (symbol?.declarations.some(d => d.kind === meaning)) {
         return symbol

@@ -16,6 +16,10 @@ function emitStatement(statement: Statement): string {
             const parameters = statement.parameters.map(x => x.name.text + (x.type ? ': ' + x.type.text : '')).join(', ')
             const type = statement.type ? ': ' + statement.type.text : ''
             return `function ${statement.name.text} ${typeParameters}(${parameters})${type}`
+        case Node.CallExpression:
+            return emitExpression(statement)
+        case Node.EmptyStatement:
+            return ''
     }
 }
 function emitExpression(expression: Expression): string {
@@ -26,6 +30,8 @@ function emitExpression(expression: Expression): string {
             return ""+expression.value
         case Node.Assignment:
             return `${expression.name.text} = ${emitExpression(expression.value)}`
+        case Node.CallExpression:
+            return `${expression.expression.text}(${expression.arguments.map(emitExpression).join(', ')})`
     }
 }
 

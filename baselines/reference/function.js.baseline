@@ -1,1 +1,1 @@
-"function a ();\nfunction b (a, b)"
+"function a ();\nfunction b (a, b);\na((missing));\nb((missing), (missing))"

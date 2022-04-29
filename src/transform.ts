@@ -21,6 +21,13 @@ function typescript(statements: Statement[]) {
                     typeParameters: undefined,
                     parameters: statement.parameters.map(x => ({ name: x.name }))
                 } as FunctionDeclaration]
+            case Node.CallExpression:
+                return [{
+                    ...statement,
+                    typeArguments: undefined,
+                }]
+            case Node.EmptyStatement:
+                return []
         }
     }
 }

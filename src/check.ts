@@ -1,11 +1,15 @@
-import { Module, Statement, Type, Node, Expression, Identifier, TypeAlias } from './types'
+import { Module, Statement, Type, Node, Expression, Identifier, TypeAlias, TypeFlags, ObjectFlags, CallExpression, FunctionDeclaration, Signature } from './types'
 import { error } from './error'
 import { resolve } from './bind'
-const stringType: Type = { id: "string" }
-const numberType: Type = { id: "number" }
-const errorType: Type = { id: "error" }
+
+let typeCount = 0;
+
+const stringType: Type = createIntrinsicType(TypeFlags.String, 'string');
+const numberType: Type = createIntrinsicType(TypeFlags.Number, 'number');
+const errorType: Type = createIntrinsicType(TypeFlags.Any, 'error');
+
 function typeToString(type: Type) {
-    return type.id
+    return type.intrinsicName || 'unknown';
 }
 export function check(module: Module) {
     return module.statements.map(checkStatement)
@@ -32,7 +36,7 @@ export function check(module: Module) {
             case Node.Identifier:
                 const symbol = resolve(module.locals, expression.text, Node.Var)
                 if (symbol) {
-                    return checkStatement(symbol.valueDeclaration!)!
+                    return checkStatement(symbol.valueDeclaration! as Statement)!
                 }
                 error(expression.pos, "Could not resolve " + expression.text)
                 return errorType
@@ -44,8 +48,29 @@ export function check(module: Module) {
                 if (t !== v)
                     error(expression.value.pos, `Cannot assign value of type '${typeToString(v)}' to variable of type '${typeToString(t)}'.`)
                 return t
+            case Node.CallExpression:
+                return checkCallExpression(expression);
         }
     }
+
+    function checkCallExpression(callExpression: CallExpression): Type {
+        const caller = callExpression.expression;
+        const symbol = resolve(module.locals, caller.text, Node.FunctionDeclaration);
+        if (!symbol) {
+            error(caller.pos, "Could not resolve " + caller.text)
+            return errorType
+        }
+
+        const declaration = symbol.valueDeclaration as FunctionDeclaration;
+        if (!declaration) {
+            error(caller.pos, "Could not find declaration " + caller.text)
+            return errorType
+        }
+
+        const signature = getSignatureFromDeclaration(declaration);
+
+    }
+
     function checkType(name: Identifier): Type {
         switch (name.text) {
             case "string":
@@ -61,4 +86,45 @@ export function check(module: Module) {
                 return errorType
         }
     }
+
+
+    function getSignatureFromDeclaration(declaration: FunctionDeclaration) {
+        const typeParameters = getTypeParametersFromDeclaration(declaration);
+        const parameters = declaration.parameters.map(p => declaration.locals?.get(p.name.text)!);
+
+        const returnTypeText = declaration.type ? declaration.type.text : undefined;
+
+        const returnType = returnTypeText && ['string', 'number'].includes(returnTypeText) ?
+            checkType(declaration.type!) :
+            returnTypeText ?
+                typeParameters.find(x => x.intrinsicName === returnTypeText) :
+                undefined;
+
+        const signature: Signature = {
+            declaration,
+            typeParameters,
+            parameters,
+            resolvedReturnType: returnType,
+        }
+
+        return signature;
+    }
+
+    function getTypeParametersFromDeclaration(declaration: FunctionDeclaration): Type[] {
+        return declaration.typeParameters ? declaration.typeParameters.map(t => {
+            const type = createIntrinsicType(TypeFlags.TypeParameter, t.text)
+            type.symbol = declaration.locals?.get(t.text)
+            return type;
+        }) : [];
+    }
+
+    function createIntrinsicType(kind: TypeFlags, intrinsicName: string): Type {
+        const type: Type = {
+            id: ++typeCount,
+            flags: kind,
+        };
+        type.intrinsicName = intrinsicName;
+        return type;
+    }
+
 }
